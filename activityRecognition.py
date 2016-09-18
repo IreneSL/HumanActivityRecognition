@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import os
 import numpy as np
-import parametersConfig
 from scipy.signal import argrelextrema
 import matplotlib.pyplot as plt
-import os
+from sklearn.decomposition import PCA
+import parametersConfig
 
 class dataInspector():
 
@@ -18,6 +19,7 @@ class dataInspector():
 		return dataChosenVariables
 
 	def activitiesSelector(self, data, activities):
+		''' Select data linked certain activities '''
 		activityInstruction = "data[np.where("
 		counter = 0
 		for activity in activities:
@@ -43,10 +45,10 @@ class dataInspector():
 
 	def dataClassSelector(self,data,column):
 		''' Pick data linked to a body movement '''
-		selectedRows = data[np.where(data[:,1] == column)]
-		print "Longitud datos iniciales"
+		selectedRows = data[np.where(data[:,0] == column)]
+		print "Initial data length"
 		print data.shape[0]
-		print "Longitud datos seleccionados"
+		print "Selected data length"
 		print selectedRows.shape[0]
 		return selectedRows
 
@@ -59,6 +61,7 @@ class dataInspector():
 		return [trainSet, testSet]
 
 	def boxplotPrinter(self, data, features):
+		''' Plot features boxplots charts '''
 		activities = np.unique(data['activity'])
 		for activity in activities:
 			activityData = data[np.where(data['activity'] == activity)]
@@ -67,27 +70,27 @@ class dataInspector():
 				figure = plt.figure(1, figsize=(9, 6))
 				ax = figure.add_subplot(111)
 				bp = ax.boxplot(featureValues, patch_artist=True)
-				## change outline color, fill color and linewidth of the boxes
+				# change outline color, fill color and linewidth of the boxes
 				for box in bp['boxes']:
 					# change outline color
 					box.set( color='#7570b3', linewidth=2)
 					# change fill color
 					box.set( facecolor = '#1b9e77' )
-				## change color and linewidth of the whiskers
+				# change color and linewidth of the whiskers
 				for whisker in bp['whiskers']:
 					whisker.set(color='#7570b3', linewidth=2)
-				## change color and linewidth of the caps
+				# change color and linewidth of the caps
 				for cap in bp['caps']:
 					cap.set(color='#7570b3', linewidth=2)
-				## change color and linewidth of the medians
+				# change color and linewidth of the medians
 				for median in bp['medians']:
 					median.set(color='#b2df8a', linewidth=2)
-				## change the style of fliers and their fill
+				# change the style of fliers and their fill
 				for flier in bp['fliers']:
 					flier.set(marker='o', color='#e7298a', alpha=0.5)
-				## Custom x-axis labels
+				# Custom x-axis labels
 				ax.set_xticklabels([feature])
-				## Remove top axes and right axes ticks
+				# Remove top axes and right axes ticks
 				ax.get_yaxis().tick_left()
 
 				directory = 'img/'+'activity_'+str(activity)
@@ -96,17 +99,10 @@ class dataInspector():
 				figure.savefig(directory+'/feature_'+feature,bbox_inches='tight')
 				figure.clf()
 
-	def variableDescriptor(self,data,headers):
-		for header in headers:
-			print "- Column", header
-			print "		+ Max", np.max(data[header])
-			print "		+ Min", np.min(data[header])
-			print "------------"
-
-
 class featureGenerator():
 
 	def featuresComputation(self,data,windowSize):
+		''' Generate new features from original data '''
 		# Existing features
 		activitiesList, xAccList, yAccList, zAccList, xAngVelList, yAngVelList, zAngVelList = [], [], [], [], [], [], []
 		# New features
@@ -311,19 +307,31 @@ class featureGenerator():
 		minPeakFrecuency = len(minPositions[0])
 		return (maxPeakFrecuency,minPeakFrecuency)
 
-#class dimensionalityDimensionalizer():
+class manageDimensionality():
+
+	def PCA(self,data,parameters):
+		pca = PCA(n_components=parameters['n_components'])
+		pca.fit(data)
+		print pca.explained_variance_ratio_
+		newDataset = pca.transform(data)
+		return newDataset
 
 #class BiometricsSupervisedLearning():
 
 def activityRecognition():
-	DI = dataInspector()
-	data = DI.dataLoader('data/HAR_UCI_RAW.txt',',',['userID','activity','experimentID','xAcceleration','yAcceleration','zAcceleration','xAngVelocity','yAngVelocity', 'zAngVelocity'], (int,int,int,float,float,float,float,float,float))
-	dataFiltered = DI.activitiesSelector(data, [1,2,3,4,5,6])
-	DI.dataSummarizer(dataFiltered,['Walking', 'Walking upstairs', 'Walking downstairs', 'Sitting', 'Standing', 'Laying'])
 
+	DI = dataInspector()
+	# Loading data
+	data = DI.dataLoader('data/HAR_UCI_RAW.txt',',',['userID','activity','experimentID','xAcceleration','yAcceleration','zAcceleration','xAngVelocity','yAngVelocity', 'zAngVelocity'], (int,int,int,float,float,float,float,float,float))
+	# Selecting certain activities
+	dataFiltered = DI.activitiesSelector(data, [1,2,3,4,5,6])
+	#DI.dataSummarizer(dataFiltered,['Walking', 'Walking upstairs', 'Walking downstairs', 'Sitting', 'Standing', 'Laying'])
+
+	# New features computation
 	FG = featureGenerator()
 	dataWithAddedFeatures = FG.featuresComputation(dataFiltered, parametersConfig.windowSize)
 
+	# Feautures headers
 	headers = ['activity','xAcc','yAcc','zAcc','xAngVel','yAngVel','zAngVel', \
 			'xAccMean','yAccMean','zAccMean','xAngVelMean','yAngVelMean','zAngVelMean', \
 			'xAccMedian','yAccMedian','zAccMedian','xAngVelMedian','yAngVelMedian','zAngVelMedian', \
@@ -339,23 +347,48 @@ def activityRecognition():
 			'xAccPKMin','yAccPKMin','zAccPKMin','xAngVelPKMin','yAngVelPKMin','zAngVelPKMin', \
 			'corAccXY','corAccXZ','corAccYZ','corAngVelXY','corAngVelXZ','corAngVelYZ']
 
+	# Features formats
 	formats = ['int'] + (['float'] * (dataWithAddedFeatures.shape[1] - 1))
-
+	# Setting headers and formats (for more useful data management)
 	dt = {'names':headers, 'formats': formats}
 	dataWithAddedFeaturesAndHeaders = np.zeros(dataWithAddedFeatures.shape[0], dtype=dt)
-
 	for columnNumber in range(0,dataWithAddedFeatures.shape[1]):
-		print headers[columnNumber]
-		print dataWithAddedFeatures[:,columnNumber]
 		dataWithAddedFeaturesAndHeaders[headers[columnNumber]] = dataWithAddedFeatures[:,columnNumber]
 
-	# Saving memory
 	data = dataWithAddedFeaturesAndHeaders
-	del dataFiltered, dataWithAddedFeatures, dataWithAddedFeaturesAndHeaders
+
+	# Saving memory
+	savingMemory([dataFiltered,dataWithAddedFeaturesAndHeaders])
 	
-	# Boxplots
-	DI.boxplotPrinter(data,headers[7:len(headers)-1])
-	
+	# Creating boxplots
+	#DI.boxplotPrinter(data,headers[7:len(headers)-1])'''
+
+	# Reducing dimensionality
+	MD = manageDimensionality()
+	dataTransformed = MD.PCA(dataWithAddedFeatures[:,1:], {'n_components':1}) # Not using 'data' variable for format pruposes
+	# Adding labels to transformed data
+	dataTransformedWithLabels = np.array((dataWithAddedFeatures[:,0], dataTransformed[:,0]))
+
+	'''# Splitting between training and test datasets
+	# Stratified sampling (Training: 0.8; Testing: 0.2)
+	trainSet = np.empty((0,dataTransformedWithLabels.shape[1]))
+	testSet = np.empty((0,dataTransformedWithLabels.shape[1]))
+	for i in range(1,6):
+		dataChoosed = DI.trainingAndTestDataChooser(DI.dataClassSelector(dataTransformedWithLabels, i), 0.8)
+		trainSet = np.append(trainSet, dataChoosed[0], axis= 0)
+		testSet = np.append(testSet, dataChoosed[1], axis= 0)
+
+	print "train"
+	print trainSet.shape
+	print trainSet
+	print "test"
+	print testSet.shape
+	print testSet'''
+
+
+def savingMemory(variables):
+	for variable in variables:
+		del variable
 	
 if __name__ == '__main__':
 	activityRecognition()
