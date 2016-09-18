@@ -3,6 +3,8 @@
 import numpy as np
 import parametersConfig
 from scipy.signal import argrelextrema
+import matplotlib.pyplot as plt
+import os
 
 class dataInspector():
 
@@ -56,10 +58,55 @@ class dataInspector():
 		testSet = data[trainSize:data.shape[0]:,]
 		return [trainSet, testSet]
 
+	def boxplotPrinter(self, data, features):
+		activities = np.unique(data['activity'])
+		for activity in activities:
+			activityData = data[np.where(data['activity'] == activity)]
+			for feature in features:
+				featureValues = activityData[feature]
+				figure = plt.figure(1, figsize=(9, 6))
+				ax = figure.add_subplot(111)
+				bp = ax.boxplot(featureValues, patch_artist=True)
+				## change outline color, fill color and linewidth of the boxes
+				for box in bp['boxes']:
+					# change outline color
+					box.set( color='#7570b3', linewidth=2)
+					# change fill color
+					box.set( facecolor = '#1b9e77' )
+				## change color and linewidth of the whiskers
+				for whisker in bp['whiskers']:
+					whisker.set(color='#7570b3', linewidth=2)
+				## change color and linewidth of the caps
+				for cap in bp['caps']:
+					cap.set(color='#7570b3', linewidth=2)
+				## change color and linewidth of the medians
+				for median in bp['medians']:
+					median.set(color='#b2df8a', linewidth=2)
+				## change the style of fliers and their fill
+				for flier in bp['fliers']:
+					flier.set(marker='o', color='#e7298a', alpha=0.5)
+				## Custom x-axis labels
+				ax.set_xticklabels([feature])
+				## Remove top axes and right axes ticks
+				ax.get_yaxis().tick_left()
+
+				directory = 'img/'+'activity_'+str(activity)
+				if not os.path.exists(directory):
+					os.makedirs(directory)
+				figure.savefig(directory+'/feature_'+feature,bbox_inches='tight')
+				figure.clf()
+
+	def variableDescriptor(self,data,headers):
+		for header in headers:
+			print "- Column", header
+			print "		+ Max", np.max(data[header])
+			print "		+ Min", np.min(data[header])
+			print "------------"
+
+
 class featureGenerator():
 
 	def featuresComputation(self,data,windowSize):
-		
 		# Existing features
 		activitiesList, xAccList, yAccList, zAccList, xAngVelList, yAngVelList, zAngVelList = [], [], [], [], [], [], []
 		# New features
@@ -105,12 +152,6 @@ class featureGenerator():
 						sample = userExperimentActivityData[0:windowSize]
 					else:
 						sample = userExperimentActivityData
-
-					# PLOT TESTING
-					DI = dataInspector()
-					name = 'user' + str(user) + '-experiment'+ str(experiment) +  '-activity'+ str(activity)
-					#DI.plottingSignal3D(sample['xAcceleration'],sample['yAcceleration'],sample['zAcceleration'],name)
-					DI.plottingSingal2D(sample['xAcceleration'],sample['yAcceleration'],name)
 
 					# Existing features
 					activitiesList = self.appendToList(activitiesList,userExperimentActivityData['activity'])
@@ -311,6 +352,10 @@ def activityRecognition():
 	# Saving memory
 	data = dataWithAddedFeaturesAndHeaders
 	del dataFiltered, dataWithAddedFeatures, dataWithAddedFeaturesAndHeaders
+	
+	# Boxplots
+	DI.boxplotPrinter(data,headers[7:len(headers)-1])
+	
 	
 if __name__ == '__main__':
 	activityRecognition()
