@@ -43,9 +43,7 @@ class dataAnalysis():
 	def dataClassSelector(self,data,column):
 		''' Pick data linked to a body movement '''
 		selectedRows = data[np.where(data[:,0] == column)]
-		print "Initial data length"
-		print data.shape[0]
-		print "Selected data length"
+		print "Data length about activity", column
 		print selectedRows.shape[0]
 		return selectedRows
 
@@ -90,7 +88,7 @@ class dataAnalysis():
 				# Remove top axes and right axes ticks
 				ax.get_yaxis().tick_left()
 
-				directory = 'img/'+'activity_'+str(activity)
+				directory = 'img/boxplots/activity_'+str(activity)
 				if not os.path.exists(directory):
 					os.makedirs(directory)
 				figure.savefig(directory+'/feature_'+feature,bbox_inches='tight')
