@@ -6,6 +6,7 @@ from sklearn.feature_selection import VarianceThreshold
 import numpy as np
 import parametersConfig
 
+
 class manageDimensionality():
 
 	def featureSelection(self,data):

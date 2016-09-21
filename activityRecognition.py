@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import parametersConfig, dataInspector, featuresManager, dimensionalityManager, biometricsSupervisedLearning
-
-#class BiometricsSupervisedLearning():
+from datetime import datetime
+from sklearn import preprocessing
 
 def activityRecognition():
 
@@ -55,21 +55,27 @@ def activityRecognition():
 	for i in range(1,7):
 		dataChoosed = DI.trainingAndTestDataChooser(DI.dataClassSelector(data, i), 0.8)
 		trainSet = np.append(trainSet, dataChoosed[0], axis=0)
+		scaledTrainSet = preprocessing.scale(trainSet) # For SVM purposes (data needs to be scaled)
 		testSet = np.append(testSet, dataChoosed[1], axis= 0)
+		scaledTestSet = preprocessing.scale(testSet) # For SVM purposes (data needs to be scaled)
 
 	# Train
 	trainSetFeatures = trainSet[:,1:trainSet.shape[1]] # Depedent variables
 	trainSetTarget = trainSet[:,0] # Independent variable: activity (walking, sitting, laying, etc.)
+	scaledTrainSetFeatures = scaledTrainSet[:,1:scaledTrainSet.shape[1]] #
 	# Test
 	testSetFeatures = testSet[:,1:testSet.shape[1]]
 	testSetTarget = testSet[:,0]
+	scaledTestSetFeatures = scaledTestSet[:,1:scaledTestSet.shape[1]]
 
 	# ---------------- 3. Machine learning algorithms ----------------
 	BSL = biometricsSupervisedLearning.supervisedLearning()
 	# 3.1 Naive Bayes
-	BSL.naiveBayes(trainSetFeatures,trainSetTarget,testSetFeatures,testSetTarget)
-
-
+	BSL.gaussianNaiveBayes(trainSetFeatures,trainSetTarget,testSetFeatures,testSetTarget)
+	# SVM
+	BSL.supportVectorClassification(scaledTrainSetFeatures,trainSetTarget,scaledTestSetFeatures,testSetTarget,parametersConfig.SVMLibrary)
+	# Decision Trees
+	BSL.decisionTree(trainSetFeatures,trainSetTarget,testSetFeatures,testSetTarget)
 
 if __name__ == '__main__':
 	activityRecognition()

@@ -20,3 +20,10 @@ headers = ['activity', \
 		'xAccMinNegPeaks', 'yAccMinNegPeaks', 'zAccMinNegPeaks', 'xAngVelMinNegPeaks', 'yAngVelMinNegPeaks', 'zAngVelMinNegPeaks', \
 		'xAccZC', 'yAccZC', 'zAccZC', 'xAngVelZC', 'yAngVelZC', 'zAngVelZC', \
 		'corAccXY','corAccXZ','corAccYZ','corAngVelXY','corAngVelXZ','corAngVelYZ']
+
+
+cacheSize = 1000 # Size of the kernel cache for SVC algorithm
+SVMLibrary = 'LinearSVC'
+# Decision trees
+maxDepth = 3000
+minSamplesLeaf = 3000
