@@ -25,4 +25,4 @@
 
 ### Who do I talk to? ###
 
-* irene.sanchezl93@gmail.com
+* <irene.sanchezl93@gmail.com>
