@@ -1,7 +1,8 @@
-windowSize = 250 # 5 seconds
+windowSize = 250 # Window size selected (it's considered big enough to study acitivity behavior): 5 seconds (50 Hz)
 frecuencyRate = 50 # 50 Hz
-minExplainedVarianceRatio = 0.9
-thresholdVariance = 0.8
+thresholdVariance = 0.8 # Threshold for remove low-variance features
+minExplainedVarianceRatio = 0.9 # Min explaind variance ratio for PCA
+
 headers = ['activity', \
 		'xAccMean','yAccMean','zAccMean','xAngVelMean','yAngVelMean','zAngVelMean', \
 		'xAccMedian','yAccMedian','zAccMedian','xAngVelMedian','yAngVelMedian','zAngVelMedian', \
@@ -23,7 +24,7 @@ headers = ['activity', \
 
 
 cacheSize = 1000 # Size of the kernel cache for SVC algorithm
-SVMLibrary = 'LinearSVC'
+SVMLibrary = 'LinearSVC' # SVM library choosen
 # Decision trees
 maxDepth = 3000
 minSamplesLeaf = 3000
