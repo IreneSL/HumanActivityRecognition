@@ -1,7 +1,7 @@
-9 Columnas
+9 Columns
 
-1) ID de usuarios
-2) Actividades
+1) User ID
+2) Activity ID
 1 WALKING           
 2 WALKING_UPSTAIRS  
 3 WALKING_DOWNSTAIRS
@@ -14,7 +14,7 @@
 10 LIE_TO_SIT        
 11 STAND_TO_LIE      
 12 LIE_TO_STAND      
-3) Experimentos
-4-6) Aceleraciones
-7-9) Velocidades Angulares
+3) Experiment ID
+4-6) Linear acceleration (g)
+7-9) Angular velocity (rad/s)
 
